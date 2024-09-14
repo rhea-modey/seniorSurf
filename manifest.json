@@ -1,0 +1,19 @@
+{
+    "manifest_version": 3,
+    "name": "Find Live Video Button",
+    "version": "1.0",
+    "description": "Highlights the Live Video button on Facebook.",
+    "permissions": ["activeTab", "scripting"],
+    "action": {
+      "default_popup": "popup.html"
+    },
+    "background": {
+      "service_worker": "background.js"
+    },
+    "icons": {
+      "16": "icon16.png",
+      "48": "icon48.png",
+      "128": "icon128.png"
+    }
+  }
+  

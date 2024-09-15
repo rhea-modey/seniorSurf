@@ -1,8 +1,8 @@
 {
     "manifest_version": 3,
-    "name": "Find Live Video Button",
+    "name": "SeniorSurf",
     "version": "1.0",
-    "description": "Highlights the Live Video button on Facebook.",
+    "description": "Helps the elderly find buttons and actions to fulfill their tasks on a website.",
     "permissions": ["activeTab", "storage","scripting" ],
     "action": {
       "default_popup": "popup.html"
@@ -12,7 +12,8 @@
       "https://*.generativeai.google/*"
     ],
     "background": {
-      "service_worker": "background.js"
+      "service_worker": "background.js",
+      "type": "module"
     },
     "icons": {
       "16": "icon16.png",
@@ -21,7 +22,7 @@
     },
     "content_scripts": [
     {
-      "matches": ["https://www.facebook.com/*"],
+      "matches": ["<all_urls>"],
       "js": ["content.js"]
     }
   ]

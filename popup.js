@@ -186,34 +186,46 @@ function displayMessage(message, sender) {
 document.getElementById('queryButton').addEventListener('click', async () => {
     const query = document.getElementById('queryInput').value;
     
-    chrome.runtime.sendMessage({ action: "query", query }, (response) => {
-        // Display steps and create highlight buttons
-        const resultsDiv = document.getElementById('results');
-        resultsDiv.innerHTML = '';
+    try {
+        const response = await chrome.runtime.sendMessage({ action: "query", query });
+        displayResults(response);
+    } catch (error) {
+        console.error('Error processing query:', error);
+        displayError('An error occurred while processing your query. Please try again.');
+    }
+});
+
+function displayResults(response) {
+    const resultsDiv = document.getElementById('results');
+    resultsDiv.innerHTML = '';
+    
+    response.steps.forEach((step, index) => {
+        const stepDiv = document.createElement('div');
+        stepDiv.textContent = `Step ${index + 1}: ${step}`;
+        stepDiv.classList.add('step');
         
-        response.steps.forEach((step, index) => {
-            const stepDiv = document.createElement('div');
-            stepDiv.textContent = `Step ${index + 1}: ${step}`;
-            stepDiv.classList.add('step');
-            
-            if (response.matches[index]) {
-                const highlightButton = document.createElement('button');
-                highlightButton.textContent = 'Highlight';
-                highlightButton.classList.add('highlight-button');
-                highlightButton.addEventListener('click', () => {
-                    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-                        chrome.tabs.sendMessage(tabs[0].id, { 
-                            action: "highlight", 
-                            selector: response.matches[index].selector 
-                        });
+        if (response.matches[index]) {
+            const highlightButton = document.createElement('button');
+            highlightButton.textContent = 'Highlight';
+            highlightButton.classList.add('highlight-button');
+            highlightButton.addEventListener('click', () => {
+                chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+                    chrome.tabs.sendMessage(tabs[0].id, { 
+                        action: "highlight", 
+                        selector: response.matches[index].selector 
                     });
                 });
-                stepDiv.appendChild(highlightButton);
-            }
-            resultsDiv.appendChild(stepDiv);
-        });
+            });
+            stepDiv.appendChild(highlightButton);
+        }
+        resultsDiv.appendChild(stepDiv);
     });
-});
+}
+
+function displayError(message) {
+    const resultsDiv = document.getElementById('results');
+    resultsDiv.innerHTML = `<div class="error">${message}</div>`;
+}
 
 
 

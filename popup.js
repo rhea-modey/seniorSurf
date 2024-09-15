@@ -43,6 +43,42 @@ document.getElementById('find-friends-button').addEventListener('click', () => {
     });
   });
 
+  document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('send-button').addEventListener('click', sendMessage);
+});
+
+function sendMessage() {
+    const userInput = document.getElementById('user-input').value;
+
+    if (userInput.trim()) {
+        displayMessage(userInput, 'user');
+        document.getElementById('user-input').value = '';
+
+        console.log("Sending message to background.js");
+        chrome.runtime.sendMessage({name: userInput});
+    }
+}
+
+function displayMessage(message, sender) {
+    const messageDiv = document.createElement('div');
+    messageDiv.classList.add('message', sender);
+    messageDiv.textContent = message;
+
+    document.getElementById('messages').appendChild(messageDiv);
+
+    // Scroll to the bottom of the chat window
+    const chatWindow = document.getElementById('chat-window');
+    chatWindow.scrollTop = chatWindow.scrollHeight;
+}
+
+// Listen for messages from the background script
+chrome.runtime.onMessage.addListener(function(message, sender, sendResponse) {
+    if (message.type === "botResponse") {
+        displayMessage(message.response, 'bot');
+    }
+});
+
+
 // function findLiveVideoButton() {
 //     // Get all span elements on the page
 //     let elements = document.querySelectorAll('span');

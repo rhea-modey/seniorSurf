@@ -7,6 +7,41 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+    <h1> Chat</h1>
+    <div id="chat-container">
+        <div id="chat-window">
+            <div id="messages"></div>
+        </div>
+        <input id="user-input" type="text" placeholder="Type a message...">
+        <button id="send-button">Send</button>
+    </div>
+    
+    <style>
+        #chat-container {
+            width: 300px;
+            margin: 0 auto;
+            padding: 10px;
+            border: 1px solid #ccc;
+        }
+        #chat-window {
+            height: 400px;
+            overflow-y: scroll;
+            border: 1px solid #ccc;
+            margin-bottom: 10px;
+            padding: 5px;
+        }
+        #messages {
+            display: flex;
+            flex-direction: column;
+        }
+        .message {
+            padding: 5px;
+            margin: 5px 0;
+        }
+        .message.user { background-color: #f1f1f1; }
+        .message.bot { background-color: #e1f7d5; }
+    </style>
+    
     <h1>Find Live Video</h1>
     <button id="find-live-video">Find Live Video Button</button>
     <button id="find-photo-video">Find Photo/Video Button</button>

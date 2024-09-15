@@ -1,4 +1,4 @@
-body {
+/* body {
     font-family: Arial, sans-serif;
     padding: 10px;
     background-color: #f0f0f0;
@@ -21,4 +21,28 @@ button {
 
 button:hover {
     background-color: #367e80;
+} */
+
+#chat-container {
+    width: 300px;
+    margin: 0 auto;
+    padding: 10px;
+    border: 1px solid #ccc;
 }
+#chat-window {
+    height: 400px;
+    overflow-y: scroll;
+    border: 1px solid #ccc;
+    margin-bottom: 10px;
+    padding: 5px;
+}
+#messages {
+    display: flex;
+    flex-direction: column;
+}
+.message {
+    padding: 5px;
+    margin: 5px 0;
+}
+.message.user { background-color: #f1f1f1; }
+.message.bot { background-color: #e1f7d5; }

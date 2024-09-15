@@ -1,5 +1,3 @@
-
-
 chrome.runtime.onInstalled.addListener(() => {
   console.log('Extension installed and background service worker activated.');
 });
@@ -8,31 +6,37 @@ chrome.runtime.onMessage.addListener(function(message, sender, sendResponse) {
   console.log("Background: Message received");
 
   fetch('http://localhost:5001/', {
-      method: 'POST',
-      headers: {
-          'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ message: message.name })
-      
-  })
-  .then(response => {
-      if (!response.ok) {
-          console.log(response);
-          throw new Error('Network response was not ok');
-      }
-      console.log("successful..1");
-      return response.json();
-  })
-  .then(data => {
-      // Send the response back to the popup
-      console.log("successful..2");
-      chrome.runtime.sendMessage({type: "botResponse", response: data.response});
-  })
-  .catch(error => {
-      console.error('Error:', error);
-      // Send an error message back to the popup
-      chrome.runtime.sendMessage({type: "botResponse", response: "Sorry, I couldn't connect to the server. Please try again later."});
-  });
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ message: message.name })
+    })
+    .then(response => {
+        if (!response.ok) {
+            console.error('Network response was not ok:', response.statusText);
+            throw new Error('Network response was not ok');
+        }
+        console.log("Successful response received.");
+        return response.json();
+    })
+    .then(data => {
+    // Check if the expected data is received
+    console.log("Data received from server:", data);
+    if (data.response) {
+        // Send the response back to the popup
+        chrome.runtime.sendMessage({ type: "botResponse", response: data.response });
+    } else {
+        console.error("Unexpected data format:", data);
+        chrome.runtime.sendMessage({ type: "botResponse", response: "Received unexpected data format from the server." });
+    }
+    })
+    .catch(error => {
+        console.error('Fetch error:', error);
+        // Send an error message back to the popup
+        chrome.runtime.sendMessage({ type: "botResponse", response: "Sorry, I couldn't connect to the server. Please try again later." });
+    });
+
 
   // Return true to indicate that we will send a response asynchronously
   return true;

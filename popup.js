@@ -43,6 +43,27 @@
 //     });
 //   });
 
+// document.addEventListener('DOMContentLoaded', () => {
+//     const sendButton = document.getElementById('queryButton');
+//     if (sendButton) {
+//         sendButton.addEventListener('click', sendMessage);
+//     } else {
+//         console.error("Could not find element with id 'queryButton'");
+//     }
+// });
+
+// function sendMessage() {
+//     const userInput = document.getElementById('queryInput').value;
+
+//     if (userInput.trim()) {
+//         displayMessage(userInput, 'user');
+//         document.getElementById('queryInput').value = '';
+
+//         console.log("Sending message to background.js");
+//         chrome.runtime.sendMessage({name: userInput});
+//     }
+// }
+
 document.addEventListener('DOMContentLoaded', () => {
     const sendButton = document.getElementById('queryButton');
     if (sendButton) {
@@ -56,13 +77,49 @@ function sendMessage() {
     const userInput = document.getElementById('queryInput').value;
 
     if (userInput.trim()) {
+        console.log("Sending message:", userInput);
         displayMessage(userInput, 'user');
         document.getElementById('queryInput').value = '';
 
-        console.log("Sending message to background.js");
-        chrome.runtime.sendMessage({name: userInput});
+        // Make the fetch request
+        fetch('http://localhost:5001/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ message: userInput })
+        })
+        .then(response => {
+            if (!response.ok) {
+                console.error('Network response was not ok:', response.statusText);
+                throw new Error('Network response was not ok');
+            }
+            console.log("Response received from server.");
+            return response.json();
+        })
+        .then(data => {
+            console.log("Data received from server:", data);
+            if (data.response) {
+                chrome.runtime.sendMessage({ type: "botResponse", response: data.response });
+            } else {
+                console.error("Unexpected data format:", data);
+                chrome.runtime.sendMessage({ type: "botResponse", response: "Received unexpected data format from the server." });
+            }
+        })
+        .catch(error => {
+            console.error('Fetch error:', error);
+            chrome.runtime.sendMessage({ type: "botResponse", response: "Sorry, I couldn't connect to the server. Please try again later." });
+        });
+    } else {
+        console.log("No user input provided.");
     }
 }
+
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    if (message.type === "botResponse") {
+        displayMessage(message.response, 'bot');
+    }
+});
 
 function displayMessage(message, sender) {
     const messageDiv = document.createElement('div');
@@ -77,11 +134,11 @@ function displayMessage(message, sender) {
 }
 
 // Listen for messages from the background script
-chrome.runtime.onMessage.addListener(function(message, sender, sendResponse) {
-    if (message.type === "botResponse") {
-        displayMessage(message.response, 'bot');
-    }
-});
+// chrome.runtime.onMessage.addListener(function(message, sender, sendResponse) {
+//     if (message.type === "botResponse") {
+//         displayMessage(message.response, 'bot');
+//     }
+// });
 document.getElementById('queryButton').addEventListener('click', async () => {
     const query = document.getElementById('queryInput').value;
     const response = await chrome.runtime.sendMessage({ action: "query", query });

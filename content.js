@@ -13,3 +13,14 @@ buttons.forEach(button => {
     tooltip.style.backgroundColor = 'yellow';
     document.body.appendChild(tooltip);
 });
+
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    if (request.action === "highlight") {
+      const element = document.querySelector(request.selector);
+      if (element) {
+        element.style.border = "3px solid red";
+        element.style.backgroundColor = "yellow";
+        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }
+  });

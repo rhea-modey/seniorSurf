@@ -3,12 +3,13 @@
     "name": "Find Live Video Button",
     "version": "1.0",
     "description": "Highlights the Live Video button on Facebook.",
-    "permissions": ["activeTab", "scripting" ],
+    "permissions": ["activeTab", "storage","scripting" ],
     "action": {
       "default_popup": "popup.html"
     },
     "host_permissions": [
-      "http://localhost:5001/"
+      "http://localhost:5001/",
+      "https://*.generativeai.google/*"
     ],
     "background": {
       "service_worker": "background.js"
@@ -17,6 +18,12 @@
       "16": "icon16.png",
       "48": "icon48.png",
       "128": "icon128.png"
+    },
+    "content_scripts": [
+    {
+      "matches": ["https://www.facebook.com/*"],
+      "js": ["content.js"]
     }
+  ]
   }
   

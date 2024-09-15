@@ -1,58 +1,63 @@
-document.getElementById('find-live-video').addEventListener('click', () => {
-    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-        chrome.scripting.executeScript({
-            target: { tabId: tabs[0].id },
-            function: findLiveVideoButton
-        });
-    });
-});
+// document.getElementById('find-live-video').addEventListener('click', () => {
+//     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+//         chrome.scripting.executeScript({
+//             target: { tabId: tabs[0].id },
+//             function: findLiveVideoButton
+//         });
+//     });
+// });
 
-document.getElementById('find-photo-video').addEventListener('click', () => {
-    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-        chrome.scripting.executeScript({
-            target: { tabId: tabs[0].id },
-            function: findPhotoVideoButton
-        });
-    });
-});
+// document.getElementById('find-photo-video').addEventListener('click', () => {
+//     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+//         chrome.scripting.executeScript({
+//             target: { tabId: tabs[0].id },
+//             function: findPhotoVideoButton
+//         });
+//     });
+// });
 
-document.getElementById('find-feeling-activity').addEventListener('click', () => {
-    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-        chrome.scripting.executeScript({
-            target: { tabId: tabs[0].id },
-            function: findFeelingActivityButton
-        });
-    });
-});
+// document.getElementById('find-feeling-activity').addEventListener('click', () => {
+//     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+//         chrome.scripting.executeScript({
+//             target: { tabId: tabs[0].id },
+//             function: findFeelingActivityButton
+//         });
+//     });
+// });
 
-document.getElementById('find-saved-posts').addEventListener('click', () => {
-  chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-      chrome.scripting.executeScript({
-          target: { tabId: tabs[0].id },
-          function: findSavedButton
-      });
-  });
-});
+// document.getElementById('find-saved-posts').addEventListener('click', () => {
+//   chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+//       chrome.scripting.executeScript({
+//           target: { tabId: tabs[0].id },
+//           function: findSavedButton
+//       });
+//   });
+// });
 
-document.getElementById('find-friends-button').addEventListener('click', () => {
-    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-        chrome.scripting.executeScript({
-            target: { tabId: tabs[0].id },
-            function: findFriendsButton
-        });
-    });
-  });
+// document.getElementById('find-friends-button').addEventListener('click', () => {
+//     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+//         chrome.scripting.executeScript({
+//             target: { tabId: tabs[0].id },
+//             function: findFriendsButton
+//         });
+//     });
+//   });
 
-  document.addEventListener('DOMContentLoaded', () => {
-    document.getElementById('send-button').addEventListener('click', sendMessage);
+document.addEventListener('DOMContentLoaded', () => {
+    const sendButton = document.getElementById('queryButton');
+    if (sendButton) {
+        sendButton.addEventListener('click', sendMessage);
+    } else {
+        console.error("Could not find element with id 'queryButton'");
+    }
 });
 
 function sendMessage() {
-    const userInput = document.getElementById('user-input').value;
+    const userInput = document.getElementById('queryInput').value;
 
     if (userInput.trim()) {
         displayMessage(userInput, 'user');
-        document.getElementById('user-input').value = '';
+        document.getElementById('queryInput').value = '';
 
         console.log("Sending message to background.js");
         chrome.runtime.sendMessage({name: userInput});
@@ -77,6 +82,32 @@ chrome.runtime.onMessage.addListener(function(message, sender, sendResponse) {
         displayMessage(message.response, 'bot');
     }
 });
+document.getElementById('queryButton').addEventListener('click', async () => {
+    const query = document.getElementById('queryInput').value;
+    const response = await chrome.runtime.sendMessage({ action: "query", query });
+    
+    // Display results
+    const resultsDiv = document.getElementById('results');
+    resultsDiv.innerHTML = '';
+    response.steps.forEach((step, index) => {
+      const stepDiv = document.createElement('div');
+      stepDiv.textContent = step;
+      if (response.matches[index]) {
+        const highlightButton = document.createElement('button');
+        highlightButton.textContent = 'Highlight';
+        highlightButton.addEventListener('click', () => {
+          chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+            chrome.tabs.sendMessage(tabs[0].id, { 
+              action: "highlight", 
+              selector: response.matches[index].selector 
+            });
+          });
+        });
+        stepDiv.appendChild(highlightButton);
+      }
+      resultsDiv.appendChild(stepDiv);
+    });
+  });
 
 
 // function findLiveVideoButton() {

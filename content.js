@@ -16,11 +16,29 @@ buttons.forEach(button => {
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.action === "highlight") {
-      const element = document.querySelector(request.selector);
-      if (element) {
-        element.style.border = "3px solid red";
-        element.style.backgroundColor = "yellow";
-        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }
+        const element = document.querySelector(request.selector);
+        if (element) {
+            // Remove previous highlights
+            document.querySelectorAll('.seniorsurf-highlight').forEach(el => {
+                el.classList.remove('seniorsurf-highlight');
+            });
+
+            // Add highlight to the new element
+            element.classList.add('seniorsurf-highlight');
+            element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        } else {
+            console.error("Element not found for selector:", request.selector);
+        }
     }
-  });
+});
+
+const style = document.createElement('style');
+style.textContent = `
+    .seniorsurf-highlight {
+        border: 3px solid red !important;
+        background-color: yellow !important;
+        padding: 2px !important;
+        border-radius: 4px !important;
+    }
+`;
+document.head.appendChild(style);

@@ -1,12 +1,12 @@
-import { GoogleGenerativeAI } from '@google/generative-ai';
-
-const API_KEY = "AIzaSyC-1VIMgO61lFnZdYpZ6AyHqwm6ZbFID4o";
-const genAI = new GoogleGenerativeAI(API_KEY);
-
 export async function generateEmbedding(text) {
-  const model = genAI.getGenerativeModel({ model: "embedding-001" });
-  const result = await model.embedContent(text);
-  return result.embedding;
+  const response = await fetch('http://localhost:5001/embed', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ text }),
+  });
+  if (!response.ok) throw new Error('Embedding request failed');
+  const data = await response.json();
+  return data.embedding;
 }
 
 function cosineSimilarity(vecA, vecB) {

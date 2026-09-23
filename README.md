@@ -1,51 +1,27 @@
-# AI Agent Navigation Assistant
+# SeniorSurf — AI Navigation Assistant prototype
 
-An AI-powered Chrome browser extension that helps elderly users navigate complex websites by translating natural-language intent into guided, step-by-step UI actions. The system uses vector embeddings and large language models to identify and highlight the most relevant interface elements on a webpage in real time.
+SeniorSurf explores natural-language guidance for people navigating unfamiliar websites. The Chrome extension sends a user's request to a local Flask service backed by Gemini, and its background script matches returned steps against a small predefined set of interface elements using embeddings.
 
-## Problem
-Many modern websites are difficult to navigate for elderly or less tech-savvy users due to dense layouts, inconsistent UI patterns, and unclear affordances. Small usability barriers often prevent users from completing simple tasks.
+This is a prototype. The extension currently seeds example Facebook controls rather than discovering actionable elements across arbitrary live pages. `vector.py` separately experiments with scraping button labels and ranking them by embedding similarity; it is not connected to the extension's live flow.
 
-## Solution
-This project introduces an AI agent that:
-1. Interprets user intent expressed in natural language.
-2. Embeds and indexes actionable UI elements (e.g., buttons, links) from a webpage’s HTML.
-3. Matches user queries to a logical sequence of actions using vector similarity.
-4. Highlights the most relevant UI elements directly in the browser to guide task completion.
+## Tech
 
-The result is an assistive navigation layer that works on existing websites without requiring backend integration.
+JavaScript, Chrome Extensions API, Python, Flask, Gemini embeddings, Beautiful Soup.
 
-## System Overview
-- Extracts button and interactive element text from the live DOM.
-- Generates vector embeddings for UI elements.
-- Processes user intent using the Google Gemini API.
-- Ranks and selects relevant actions via embedding similarity.
-- Visually highlights recommended UI elements in real time.
+## Local setup
 
-## Tech Stack
-- **JavaScript** – Chrome extension logic  
-- **Google Gemini API** – Natural language understanding  
-- **Vector Embeddings** – Semantic matching between intent and UI elements  
-- **HTML / DOM Parsing** – UI element extraction  
-- **Chrome Extensions API** – Browser integration  
+```bash
+python -m venv .venv
+source .venv/bin/activate
+pip install flask flask-cors google-generativeai beautifulsoup4 numpy pandas requests
+export GEMINI_API_KEY="your-key-here"
+python geminiAPI.py
+```
 
-# Packages/Dependencies Required
-Our extension is running on a virtual environment.
-1. Python version 3+
-2. Flask library
-3. Flask-cors library
-4. Google-GenerativeAI
+Load the unpacked extension in Chrome to try the prototype. The background script calls the local Flask service at `http://localhost:5001/`; embedding requests use `/embed`. Do not put an API key in the extension or commit one to the repository.
 
-## Key Features
-- Natural language task input (e.g., “schedule a doctor’s appointment”)
-- Real-time UI element discovery and highlighting
-- No website-specific customization required
-- Lightweight, privacy-conscious client-side execution
+## Next steps
 
-## Impact
-By mapping intent directly to actionable UI elements, this system reduces cognitive load and improves accessibility for elderly users, demonstrating how GenAI can be applied to human-centered interface navigation.
-
-## Future Work
-- Multi-step task planning and action sequencing  
-- Voice input for hands-free interaction  
-- Personalization based on user behavior  
-- Expanded accessibility features (contrast, text size, tooltips)
+- Discover actionable controls from the current page's DOM.
+- Support multi-step plans and robust selection of controls.
+- Add voice input and accessibility settings.

@@ -1,20 +1,22 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
+import os
 import google.generativeai as genai
 
 app = Flask(__name__)
-CORS(app)  # Enable CORS for all routes by default
+CORS(app)
 
-# Configure your Gemini API Key
-api_key = "AIzaSyC-1VIMgO61lFnZdYpZ6AyHqwm6ZbFID4o"
+# Configure Gemini from an environment variable. Never commit API keys.
+api_key = os.environ.get("GEMINI_API_KEY")
+if not api_key:
+    raise RuntimeError("GEMINI_API_KEY is not set")
 genai.configure(api_key=api_key)
 
-# Setup the model and session
 generation_config = {
-    "temperature": 0.5,  # Lower temperature for more predictable output
+    "temperature": 0.5,
     "top_p": 0.95,
     "top_k": 64,
-    "max_output_tokens": 200,  # Reduced token limit for more concise responses
+    "max_output_tokens": 200,
     "response_mime_type": "text/plain",
 }
 safety_settings = [
@@ -31,39 +33,41 @@ model = genai.GenerativeModel(
 )
 
 system_prompt = """
-You are an agent that specializes in helping the elderly in navigating webpages. You will be asked queries on how to
-navigate webpages. Your task is to break down the task into clear and concise actions. Each step should correspond
-to a single action on the webpage like clicking a button or typing in a search bar. Ensure each step specifies exactly what buttons or actions to make. Provide a concise list of steps. Avoid lengthy explanations. Each step should include the element of the webpage that the user should interact with.
-
-Example:
-Query: How can I send a friend request to Bob on Facebook?
-Your Output:
-1. Enter your username and password to log into your Facebook account.
-2. Search for Bob in the search bar at the top of the page.
-3. Click on Bob's profile from the search results.
-4. Click on the 'Add Friend' button on Bob's profile page.
+You are an agent that specializes in helping elderly users navigate webpages.
+Break each task into clear, concise actions. Each step should correspond to a
+single webpage action such as clicking a button or entering text. Name the
+specific interface element whenever possible and avoid unnecessary explanation.
 """
 
 chat_session = model.start_chat(history=[
     {"role": "user", "parts": [system_prompt]},
-    {"role": "model", "parts": ["Understood."]}
+    {"role": "model", "parts": ["Understood."]},
 ])
 
+@app.route("/embed", methods=["POST"])
+def embed():
+    text = (request.get_json(silent=True) or {}).get("text")
+    if not isinstance(text, str) or not text.strip():
+        return jsonify({"error": "No text provided"}), 400
+    result = genai.embed_content(
+        model="models/embedding-001",
+        content=text,
+        task_type="retrieval_document",
+    )
+    return jsonify({"embedding": result["embedding"]})
 
-@app.route('/', methods=['GET'])
+@app.route("/", methods=["GET"])
 def hello_world():
-    return jsonify({'response': "Hello World"})
+    return jsonify({"response": "Hello World"})
 
-@app.route('/', methods=['POST'])
+@app.route("/", methods=["POST"])
 def chat():
-    user_message = request.json.get('message')
-    
+    user_message = request.json.get("message")
     if not user_message:
-        return jsonify({'error': 'No message provided'}), 400
+        return jsonify({"error": "No message provided"}), 400
 
-    # Send message to Gemini and get response
     response = chat_session.send_message(user_message)
-    return jsonify({'response': response.text})
+    return jsonify({"response": response.text})
 
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5001)
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5001)
